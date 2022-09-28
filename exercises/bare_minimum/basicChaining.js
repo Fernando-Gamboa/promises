@@ -10,11 +10,28 @@
 
 var fs = require('fs');
 var Promise = require('bluebird');
-
+var GitUser = require('./promisification.js');
+var Constructor = require('./promiseConstructor.js');
 
 
 var fetchProfileAndWriteToFile = function(readFilePath, writeFilePath) {
   // TODO
+  // use constructor to find the user name in first line
+  return Constructor.pluckFirstLineFromFileAsync(readFilePath)
+    // then use gituser to getGitHubProfile
+    .then((user) => GitUser.getGitHubProfileAsync(user))
+    // then writeFile
+    .then((profiles) => {
+      console.log(profiles);
+      return fs.writeFile(writeFilePath, JSON.stringify(profiles), (err) => {
+        if (err) {
+          throw ('Failed to write');
+        }
+      });
+    })
+    .catch((err) => {
+      console.log(err, '---');
+    });
 };
 
 // Export these functions so we can test them
